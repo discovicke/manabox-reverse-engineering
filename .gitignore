@@ -2,6 +2,9 @@
 .env.*
 *.env
 *.env.local
+# men exemplet ska committas:
+!.env.example
+!**/.env.example
 appsettings.Development.json
 appsettings.*.local.json
 secrets.json
@@ -54,8 +57,9 @@ dotnet-diagnostic-*.log
 *.suo
 *.userosscache
 *.sln.docstates
-.idea/*
-!.idea/.gitignore
+# JetBrains Rider – alla nivåer, aldrig committa
+**/.idea/
+**/.idea/**
 
 **/Properties/PublishProfiles/*.pubxml
 *.publishsettings
