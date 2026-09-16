@@ -55,6 +55,16 @@ public class ScryfallCardDto
     public string? ResolvedNormalImage =>
         ImageUris?.Normal ?? CardFaces?.FirstOrDefault(f => f.ImageUris != null)?.ImageUris?.Normal;
 
+    /// <summary>Normaliserar farger till sorterade bokstaver. Tom lista = farglost.</summary>
+    public static string NormalizeColors(List<string>? colors, List<ScryfallCardFaceDto>? faces)
+    {
+        var src = colors is { Count: > 0 } ? colors : faces?.FirstOrDefault(f => f.Colors is { Count: > 0 })?.Colors;
+        if (src is null || src.Count == 0)
+            return string.Empty;
+        var order = "WUBRG";
+        return string.Concat(src.Where(c => c.Length == 1).Select(c => c.ToUpperInvariant()).Distinct().OrderBy(c => order.IndexOf(c)));
+    }
+
     /// <summary>Skapar ett MtgCard från Scryfall-datan.</summary>
     public MtgCard ToMtgCard(CardSource source = CardSource.Ocr, string? rawInput = null, int quantity = 1)
     {
@@ -66,6 +76,7 @@ public class ScryfallCardDto
             SetName = SetName,
             CollectorNumber = CollectorNumber,
             Rarity = Rarity,
+            Colors = NormalizeColors(Colors, CardFaces),
             Language = Lang,
             Foil = Foil,
             PriceEur = ScryfallPricesDto.ParsePrice(Prices.Eur),
