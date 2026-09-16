@@ -69,3 +69,4 @@ dotnet-diagnostic-*.log
 *.swo
 Thumbs.db
 Desktop.ini
+app.db

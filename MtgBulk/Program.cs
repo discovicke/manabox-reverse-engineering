@@ -1,10 +1,20 @@
+using DotNetEnv;
+using Microsoft.EntityFrameworkCore;
 using MtgBulk.Components;
+using MtgBulk.Data;
+using MtgBulk.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
-DotNetEnv.Env.Load(Path.Combine(builder.Environment.ContentRootPath, ".env"));
+Env.Load(Path.Combine(builder.Environment.ContentRootPath, ".env"));
 
-// Add services to the container.
+builder.Services.AddDbContext<AppDbContext>(options =>
+    options.UseSqlite(builder.Configuration.GetConnectionString("Default") ?? "Data Source=app.db"));
+
+builder.Services.AddHttpClient<ScryfallService>();
+builder.Services.AddScoped<BulkImportService>();
+builder.Services.AddScoped<CardRecognitionService>();
+
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 
@@ -19,7 +29,6 @@ if (!app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-
 
 app.UseAntiforgery();
 
