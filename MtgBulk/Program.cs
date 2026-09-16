@@ -11,7 +11,12 @@ Env.Load(Path.Combine(builder.Environment.ContentRootPath, ".env"));
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlite(builder.Configuration.GetConnectionString("Default") ?? "Data Source=app.db"));
 
-builder.Services.AddHttpClient<ScryfallService>();
+builder.Services.AddHttpClient<ScryfallService>(client =>
+{
+    client.BaseAddress = new Uri("https://api.scryfall.com/");
+    client.DefaultRequestHeaders.UserAgent.ParseAdd("MtgBulk/1.0 (school-project)");
+    client.DefaultRequestHeaders.Accept.ParseAdd("application/json");
+});
 builder.Services.AddScoped<BulkImportService>();
 builder.Services.AddScoped<CardRecognitionService>();
 

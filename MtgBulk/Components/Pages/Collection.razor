@@ -1,0 +1,30 @@
+@page "/collection"
+@rendermode InteractiveServer
+@using Microsoft.EntityFrameworkCore
+@using MtgBulk.Data
+@using MtgBulk.Models
+@using MtgBulk.Components.Cards
+@inject AppDbContext Db
+
+<PageTitle>Samling</PageTitle>
+
+<h1>Samling (@cards.Count)</h1>
+
+<input class="form-control mb-3" placeholder="Sök namn..." @bind="search" @bind:event="oninput" />
+
+<CardTable Cards="Filtered" />
+
+@code {
+    private List<MtgCard> cards = [];
+    private string search = string.Empty;
+
+    private List<MtgCard> Filtered =>
+        string.IsNullOrWhiteSpace(search)
+            ? cards
+            : cards.Where(c => c.Name.Contains(search, StringComparison.OrdinalIgnoreCase)).ToList();
+
+    protected override async Task OnInitializedAsync()
+    {
+        cards = await Db.Cards.OrderBy(c => c.Name).Take(200).ToListAsync();
+    }
+}

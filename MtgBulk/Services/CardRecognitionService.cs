@@ -41,6 +41,7 @@ public class CardRecognitionService(
 
         var candidate = rawText
             .Split('\n', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+            .Where(l => l.Length >= 2 && l.Any(char.IsLetter))
             .FirstOrDefault();
 
         if (string.IsNullOrWhiteSpace(candidate))
@@ -49,7 +50,11 @@ public class CardRecognitionService(
         ScryfallCardDto? dto;
         try
         {
-            dto = await scryfall.FindByFuzzyNameAsync(candidate, ct);
+            dto = await scryfall.FindByFuzzyNameAsync(candidate.Trim(), ct);
+        }
+        catch (ArgumentException ex)
+        {
+            return new RecognizeResult(false, candidate, rawText, null, $"Ogiltigt kortnamn '{candidate}': {ex.Message}");
         }
         catch (HttpRequestException ex)
         {

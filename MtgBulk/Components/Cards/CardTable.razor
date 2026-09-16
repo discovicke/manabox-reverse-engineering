@@ -1,0 +1,44 @@
+@using MtgBulk.Models
+
+@if (Cards.Count == 0)
+{
+    <p>Inga kort ännu. Importera CSV eller skanna ett kort.</p>
+}
+else
+{
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th></th>
+                <th>Namn</th>
+                <th>Set</th>
+                <th>Antal</th>
+                <th>EUR</th>
+                <th>Källa</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var card in Cards)
+            {
+                <tr>
+                    <td>
+                        @if (!string.IsNullOrEmpty(card.ImageSmall))
+                        {
+                            <img src="@card.ImageSmall" width="40" alt="@card.Name" />
+                        }
+                    </td>
+                    <td>@card.Name</td>
+                    <td>@card.SetCode.ToUpper() #@card.CollectorNumber</td>
+                    <td>@card.Quantity</td>
+                    <td>@(card.PriceEur?.ToString("0.00") ?? "-")</td>
+                    <td>@card.Source</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    [Parameter]
+    public List<MtgCard> Cards { get; set; } = [];
+}
