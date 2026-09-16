@@ -58,6 +58,19 @@ public class BulkImportService(AppDbContext db, ScryfallService scryfall)
                 {
                     existing.Quantity += row.Quantity;
                     existing.UpdatedAt = DateTime.UtcNow;
+                    if (enrichFromScryfall && string.IsNullOrEmpty(existing.Colors))
+                    {
+                        try
+                        {
+                            var fill = await scryfall.GetByIdAsync(id, ct);
+                            if (fill is not null)
+                                existing.Colors = ScryfallCardDto.NormalizeColors(fill.Colors, fill.CardFaces);
+                        }
+                        catch (Exception ex)
+                        {
+                            errors.Add($"{row.Name}: farghopp ({ex.Message})");
+                        }
+                    }
                     updated++;
                 }
                 else if (pendingById.TryGetValue(id, out var pending))
@@ -81,6 +94,7 @@ public class BulkImportService(AppDbContext db, ScryfallService scryfall)
                                 card.ImageSmall = dto.ResolvedSmallImage;
                                 card.ImageNormal = dto.ResolvedNormalImage;
                                 card.ScryfallUri = dto.ScryfallUri;
+                                card.Colors = ScryfallCardDto.NormalizeColors(dto.Colors, dto.CardFaces);
                             }
                         }
                         catch (Exception ex)

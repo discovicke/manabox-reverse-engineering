@@ -71,6 +71,8 @@ public class CardRecognitionService(
             existing.UpdatedAt = DateTime.UtcNow;
             existing.PriceEur = ScryfallPricesDto.ParsePrice(dto.Prices.Eur) ?? existing.PriceEur;
             existing.PriceUsd = ScryfallPricesDto.ParsePrice(dto.Prices.Usd) ?? existing.PriceUsd;
+            if (string.IsNullOrEmpty(existing.Colors))
+                existing.Colors = ScryfallCardDto.NormalizeColors(dto.Colors, dto.CardFaces);
             await db.SaveChangesAsync(ct);
             return new RecognizeResult(true, dto.Name, rawText, existing, null);
         }

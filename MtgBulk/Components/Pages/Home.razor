@@ -1,4 +1,7 @@
 ﻿@page "/"
+@rendermode InteractiveServer
+@using MtgBulk.Services
+@inject CollectionStatsService Stats
 
 <PageTitle>MTG Bulk</PageTitle>
 
@@ -7,3 +10,57 @@
 <p>
     <a href="collection">Visa samling</a> • <a href="scan">Skanna kort</a> • <a href="import">Importera CSV</a>
 </p>
+
+@if (stats is null)
+{
+    <p>Laddar statistik...</p>
+}
+else
+{
+    <h2>Totalt: @stats.TotalValueEur.ToString("0.00") EUR (@stats.TotalQuantity kort, @stats.TotalUnique unika)</h2>
+
+    <h3>Per raritet</h3>
+    <table class="table table-striped">
+        <thead>
+            <tr><th>Raritet</th><th>Unika</th><th>Antal</th><th>Varde EUR</th></tr>
+        </thead>
+        <tbody>
+            @foreach (var r in stats.ByRarity)
+            {
+                <tr>
+                    <td>@r.Rarity</td>
+                    <td>@r.Unique</td>
+                    <td>@r.Quantity</td>
+                    <td>@r.ValueEur.ToString("0.00")</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    <h3>Per farg</h3>
+    <table class="table table-striped">
+        <thead>
+            <tr><th>Farg</th><th>Unika</th><th>Antal</th><th>Varde EUR</th></tr>
+        </thead>
+        <tbody>
+            @foreach (var c in stats.ByColor)
+            {
+                <tr>
+                    <td>@c.Group</td>
+                    <td>@c.Unique</td>
+                    <td>@c.Quantity</td>
+                    <td>@c.ValueEur.ToString("0.00")</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    private CollectionStats? stats;
+
+    protected override async Task OnInitializedAsync()
+    {
+        stats = await Stats.GetStatsAsync();
+    }
+}

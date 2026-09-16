@@ -12,9 +12,10 @@ else
                 <th></th>
                 <th><button class="btn btn-link p-0" @onclick='() => OnSort.InvokeAsync("Name")'>Namn @Arrow("Name")</button></th>
                 <th><button class="btn btn-link p-0" @onclick='() => OnSort.InvokeAsync("Set")'>Set @Arrow("Set")</button></th>
+                <th><button class="btn btn-link p-0" @onclick='() => OnSort.InvokeAsync("Colors")'>Färg @Arrow("Colors")</button></th>
                 <th><button class="btn btn-link p-0" @onclick='() => OnSort.InvokeAsync("Quantity")'>Antal @Arrow("Quantity")</button></th>
                 <th><button class="btn btn-link p-0" @onclick='() => OnSort.InvokeAsync("PriceEur")'>EUR @Arrow("PriceEur")</button></th>
-                <th><button class="btn btn-link p-0" @onclick='() => OnSort.InvokeAsync("Source")'>Kalla @Arrow("Source")</button></th>
+                <th><button class="btn btn-link p-0" @onclick='() => OnSort.InvokeAsync("Source")'>Källa @Arrow("Source")</button></th>
             </tr>
         </thead>
         <tbody>
@@ -29,6 +30,7 @@ else
                     </td>
                     <td>@card.Name</td>
                     <td>@card.SetCode.ToUpper() #@card.CollectorNumber</td>
+                    <td>@ColorBadges(card.Colors)</td>
                     <td>@card.Quantity</td>
                     <td>@(card.PriceEur?.ToString("0.00") ?? "-")</td>
                     <td>@card.Source</td>
@@ -52,5 +54,16 @@ else
     public EventCallback<string> OnSort { get; set; }
 
     private string Arrow(string column) =>
-        SortColumn != column ? "" : SortAscending ? "^" : "v";
+        SortColumn != column 
+            ? "" 
+            : SortAscending 
+                ? "^" 
+                : "v";
+
+    private string ColorBadges(string colors) =>
+        string.IsNullOrEmpty(colors) 
+            ? "Färglöst" 
+            : colors.Length > 1 
+                ? $"Multi ({colors})" 
+                : colors;
 }

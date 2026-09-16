@@ -127,6 +127,9 @@ public class ScryfallCardFaceDto
     [JsonPropertyName("name")]
     public string? Name { get; set; }
 
+    [JsonPropertyName("colors")]
+    public List<string>? Colors { get; set; }
+
     [JsonPropertyName("image_uris")]
     public ScryfallImageUrisDto? ImageUris { get; set; }
 }

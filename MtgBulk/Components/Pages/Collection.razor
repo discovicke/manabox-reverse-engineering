@@ -10,14 +10,14 @@
 
 <h1>Samling (@totalCount)</h1>
 
-<input class="form-control mb-3" placeholder="Sok namn..." value="@search" @oninput="OnSearchInput" />
+<input class="form-control mb-3" placeholder="Sök namn..." value="@search" @oninput="OnSearchInput" />
 
 <CardTable Cards="cards" SortColumn="@sortColumn" SortAscending="@sortAscending" OnSort="OnSortChanged" />
 
 <div class="d-flex gap-2 align-items-center mt-2">
-    <button class="btn btn-secondary" disabled="@(currentPage <= 1)" @onclick="PrevPage">Forra</button>
+    <button class="btn btn-secondary" disabled="@(currentPage <= 1)" @onclick="PrevPage">Förra</button>
     <span>Sida @currentPage av @totalPages</span>
-    <button class="btn btn-secondary" disabled="@(currentPage >= totalPages)" @onclick="NextPage">Nasta</button>
+    <button class="btn btn-secondary" disabled="@(currentPage >= totalPages)" @onclick="NextPage">Nästa</button>
 </div>
 
 @code {
@@ -91,6 +91,8 @@
             ("PriceEur", false) => query.OrderByDescending(c => c.PriceEur),
             ("Source", true) => query.OrderBy(c => c.Source),
             ("Source", false) => query.OrderByDescending(c => c.Source),
+            ("Colors", true) => query.OrderBy(c => c.Colors),
+            ("Colors", false) => query.OrderByDescending(c => c.Colors),
             (_, false) => query.OrderByDescending(c => c.Name),
             _ => query.OrderBy(c => c.Name),
         };

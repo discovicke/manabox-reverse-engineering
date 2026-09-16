@@ -10,7 +10,7 @@ public class ScryfallService(HttpClient http)
     {
         if (!http.DefaultRequestHeaders.Contains("User-Agent"))
             http.DefaultRequestHeaders.UserAgent.ParseAdd("MtgBulk/1.0 (school-project)");
-        if (!http.DefaultRequestHeaders.Accept.Any(h => h.MediaType == "application/json"))
+        if (http.DefaultRequestHeaders.Accept.All(h => h.MediaType != "application/json"))
             http.DefaultRequestHeaders.Accept.ParseAdd("application/json");
     }
     /// <summary>Söker ett kort på ungefärligt namn (OCR-text). Returnerar null om inget hittas.</summary>

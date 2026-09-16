@@ -19,6 +19,7 @@ builder.Services.AddHttpClient<ScryfallService>(client =>
 });
 builder.Services.AddScoped<BulkImportService>();
 builder.Services.AddScoped<CardRecognitionService>();
+builder.Services.AddScoped<CollectionStatsService>();
 
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
