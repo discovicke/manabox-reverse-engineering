@@ -10,11 +10,11 @@ else
         <thead>
             <tr>
                 <th></th>
-                <th>Namn</th>
-                <th>Set</th>
-                <th>Antal</th>
-                <th>EUR</th>
-                <th>Källa</th>
+                <th><button class="btn btn-link p-0" @onclick='() => OnSort.InvokeAsync("Name")'>Namn @Arrow("Name")</button></th>
+                <th><button class="btn btn-link p-0" @onclick='() => OnSort.InvokeAsync("Set")'>Set @Arrow("Set")</button></th>
+                <th><button class="btn btn-link p-0" @onclick='() => OnSort.InvokeAsync("Quantity")'>Antal @Arrow("Quantity")</button></th>
+                <th><button class="btn btn-link p-0" @onclick='() => OnSort.InvokeAsync("PriceEur")'>EUR @Arrow("PriceEur")</button></th>
+                <th><button class="btn btn-link p-0" @onclick='() => OnSort.InvokeAsync("Source")'>Kalla @Arrow("Source")</button></th>
             </tr>
         </thead>
         <tbody>
@@ -41,4 +41,16 @@ else
 @code {
     [Parameter]
     public List<MtgCard> Cards { get; set; } = [];
+
+    [Parameter]
+    public string SortColumn { get; set; } = "Name";
+
+    [Parameter]
+    public bool SortAscending { get; set; } = true;
+
+    [Parameter]
+    public EventCallback<string> OnSort { get; set; }
+
+    private string Arrow(string column) =>
+        SortColumn != column ? "" : SortAscending ? "^" : "v";
 }

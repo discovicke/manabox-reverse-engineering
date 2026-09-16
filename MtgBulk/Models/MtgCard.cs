@@ -33,6 +33,10 @@ public class MtgCard
     [MaxLength(32)]
     public string Rarity { get; set; } = string.Empty;
 
+    /// <summary>Farger som sorterade bokstaver, t.ex. "", "W", "WUB". Tom = farglost.</summary>
+    [MaxLength(8)]
+    public string Colors { get; set; } = string.Empty;
+
     [MaxLength(8)]
     public string Language { get; set; } = "en";
 
@@ -43,8 +47,8 @@ public class MtgCard
 
     public int Quantity { get; set; } = 1;
 
-    public decimal? PriceEur { get; set; }
-    public decimal? PriceUsd { get; set; }
+    public double? PriceEur { get; set; }
+    public double? PriceUsd { get; set; }
 
     [MaxLength(500)]
     public string? ImageSmall { get; set; }

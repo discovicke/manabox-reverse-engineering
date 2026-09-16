@@ -8,23 +8,93 @@
 
 <PageTitle>Samling</PageTitle>
 
-<h1>Samling (@cards.Count)</h1>
+<h1>Samling (@totalCount)</h1>
 
-<input class="form-control mb-3" placeholder="Sök namn..." @bind="search" @bind:event="oninput" />
+<input class="form-control mb-3" placeholder="Sok namn..." value="@search" @oninput="OnSearchInput" />
 
-<CardTable Cards="Filtered" />
+<CardTable Cards="cards" SortColumn="@sortColumn" SortAscending="@sortAscending" OnSort="OnSortChanged" />
+
+<div class="d-flex gap-2 align-items-center mt-2">
+    <button class="btn btn-secondary" disabled="@(currentPage <= 1)" @onclick="PrevPage">Forra</button>
+    <span>Sida @currentPage av @totalPages</span>
+    <button class="btn btn-secondary" disabled="@(currentPage >= totalPages)" @onclick="NextPage">Nasta</button>
+</div>
 
 @code {
     private List<MtgCard> cards = [];
     private string search = string.Empty;
+    private string sortColumn = "Name";
+    private bool sortAscending = true;
+    private int currentPage = 1;
+    private const int pageSize = 20;
+    private int totalCount;
+    private int totalPages = 1;
 
-    private List<MtgCard> Filtered =>
-        string.IsNullOrWhiteSpace(search)
-            ? cards
-            : cards.Where(c => c.Name.Contains(search, StringComparison.OrdinalIgnoreCase)).ToList();
+    protected override async Task OnInitializedAsync() => await LoadPageAsync();
 
-    protected override async Task OnInitializedAsync()
+    private async Task OnSearchInput(ChangeEventArgs e)
     {
-        cards = await Db.Cards.OrderBy(c => c.Name).Take(200).ToListAsync();
+        search = e.Value?.ToString() ?? string.Empty;
+        currentPage = 1;
+        await LoadPageAsync();
+    }
+
+    private async Task OnSortChanged(string column)
+    {
+        if (sortColumn == column)
+            sortAscending = !sortAscending;
+        else
+        {
+            sortColumn = column;
+            sortAscending = true;
+        }
+        currentPage = 1;
+        await LoadPageAsync();
+    }
+
+    private async Task PrevPage()
+    {
+        if (currentPage > 1)
+        {
+            currentPage--;
+            await LoadPageAsync();
+        }
+    }
+
+    private async Task NextPage()
+    {
+        if (currentPage < totalPages)
+        {
+            currentPage++;
+            await LoadPageAsync();
+        }
+    }
+
+    private async Task LoadPageAsync()
+    {
+        var query = Db.Cards.AsQueryable();
+
+        if (!string.IsNullOrWhiteSpace(search))
+            query = query.Where(c => c.Name.Contains(search));
+
+        totalCount = await query.CountAsync();
+        totalPages = Math.Max(1, (int)Math.Ceiling(totalCount / (double)pageSize));
+        currentPage = Math.Clamp(currentPage, 1, totalPages);
+
+        query = (sortColumn, sortAscending) switch
+        {
+            ("Set", true) => query.OrderBy(c => c.SetCode),
+            ("Set", false) => query.OrderByDescending(c => c.SetCode),
+            ("Quantity", true) => query.OrderBy(c => c.Quantity),
+            ("Quantity", false) => query.OrderByDescending(c => c.Quantity),
+            ("PriceEur", true) => query.OrderBy(c => c.PriceEur),
+            ("PriceEur", false) => query.OrderByDescending(c => c.PriceEur),
+            ("Source", true) => query.OrderBy(c => c.Source),
+            ("Source", false) => query.OrderByDescending(c => c.Source),
+            (_, false) => query.OrderByDescending(c => c.Name),
+            _ => query.OrderBy(c => c.Name),
+        };
+
+        cards = await query.Skip((currentPage - 1) * pageSize).Take(pageSize).ToListAsync();
     }
 }

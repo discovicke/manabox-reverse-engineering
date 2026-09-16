@@ -14,8 +14,6 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
             entity.HasKey(e => e.Id);
             entity.HasIndex(e => e.ScryfallId).IsUnique();
             entity.Property(e => e.Name).IsRequired();
-            entity.Property(e => e.PriceEur).HasPrecision(10, 2);
-            entity.Property(e => e.PriceUsd).HasPrecision(10, 2);
         });
     }
 }

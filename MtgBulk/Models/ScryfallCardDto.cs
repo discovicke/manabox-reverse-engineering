@@ -35,6 +35,12 @@ public class ScryfallCardDto
     [JsonPropertyName("image_uris")]
     public ScryfallImageUrisDto? ImageUris { get; set; }
 
+    [JsonPropertyName("colors")]
+    public List<string>? Colors { get; set; }
+
+    [JsonPropertyName("color_identity")]
+    public List<string>? ColorIdentity { get; set; }
+
     [JsonPropertyName("card_faces")]
     public List<ScryfallCardFaceDto>? CardFaces { get; set; }
 
@@ -62,8 +68,8 @@ public class ScryfallCardDto
             Rarity = Rarity,
             Language = Lang,
             Foil = Foil,
-            PriceEur = ScryfallPricesDto.ParseDecimal(Prices.Eur),
-            PriceUsd = ScryfallPricesDto.ParseDecimal(Prices.Usd),
+            PriceEur = ScryfallPricesDto.ParsePrice(Prices.Eur),
+            PriceUsd = ScryfallPricesDto.ParsePrice(Prices.Usd),
             ImageSmall = ResolvedSmallImage,
             ImageNormal = ResolvedNormalImage,
             ScryfallUri = ScryfallUri,
@@ -83,12 +89,12 @@ public class ScryfallPricesDto
     [JsonPropertyName("usd")]
     public string? Usd { get; set; }
 
-    /// <summary>Tolkar en Scryfall-prissträng till decimal. Returnerar null om den saknas.</summary>
-    public static decimal? ParseDecimal(string? value)
+    /// <summary>Tolkar en Scryfall-prissträng till double. Returnerar null om den saknas.</summary>
+    public static double? ParsePrice(string? value)
     {
         if (string.IsNullOrWhiteSpace(value))
             return null;
-        if (decimal.TryParse(value, System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out var result))
+        if (double.TryParse(value, System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out var result))
             return result;
         return null;
     }

@@ -76,8 +76,8 @@ public class BulkImportService(AppDbContext db, ScryfallService scryfall)
                             var dto = await scryfall.GetByIdAsync(card.ScryfallId, ct);
                             if (dto is not null)
                             {
-                                card.PriceEur = ScryfallPricesDto.ParseDecimal(dto.Prices.Eur);
-                                card.PriceUsd = ScryfallPricesDto.ParseDecimal(dto.Prices.Usd);
+                                card.PriceEur = ScryfallPricesDto.ParsePrice(dto.Prices.Eur);
+                                card.PriceUsd = ScryfallPricesDto.ParsePrice(dto.Prices.Usd);
                                 card.ImageSmall = dto.ResolvedSmallImage;
                                 card.ImageNormal = dto.ResolvedNormalImage;
                                 card.ScryfallUri = dto.ScryfallUri;

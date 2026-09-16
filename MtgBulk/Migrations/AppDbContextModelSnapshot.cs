@@ -60,13 +60,11 @@ namespace MtgBulk.Migrations
                         .HasMaxLength(300)
                         .HasColumnType("TEXT");
 
-                    b.Property<decimal?>("PriceEur")
-                        .HasPrecision(10, 2)
-                        .HasColumnType("TEXT");
+                    b.Property<double?>("PriceEur")
+                        .HasColumnType("REAL");
 
-                    b.Property<decimal?>("PriceUsd")
-                        .HasPrecision(10, 2)
-                        .HasColumnType("TEXT");
+                    b.Property<double?>("PriceUsd")
+                        .HasColumnType("REAL");
 
                     b.Property<int>("Quantity")
                         .HasColumnType("INTEGER");
