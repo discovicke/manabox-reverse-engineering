@@ -1,0 +1,89 @@
+@page "/import"
+@rendermode InteractiveServer
+@using MtgBulk.Services
+@inject BulkImportService Importer
+@inject NavigationManager Nav
+
+<PageTitle>Importera ManaBox</PageTitle>
+
+<h1>Importera ManaBox-CSV</h1>
+<p class="text-muted">Ladda upp din export från ManaBox. Matchning sker på Scryfall ID - befintliga kort får ökat antal.</p>
+
+<InputFile OnChange="OnFilePicked" accept=".csv,text/csv" />
+<br />
+
+<div class="form-check mt-2">
+    <InputCheckbox class="form-check-input" @bind-Value="enrich" id="enrich-check" />
+    <label class="form-check-label" for="enrich-check">Hämta pris/bild från Scryfall (långsammare)</label>
+</div>
+
+<button class="btn btn-primary mt-2" disabled="@(pickedFile is null || busy)" @onclick="ImportAsync">
+    @(busy ? "Importerar..." : "Importera")
+</button>
+
+@if (!string.IsNullOrEmpty(status))
+{
+    <div class="alert alert-info mt-3">@status</div>
+}
+
+@if (summary is not null)
+{
+    <div class="alert @(summary.Errors.Count == 0 ? "alert-success" : "alert-warning") mt-3">
+        Nya: @summary.Imported • Uppdaterade: @summary.Updated • Överhoppade: @summary.Skipped
+        <a href="collection" class="ms-2">Visa samling ></a>
+    </div>
+    @if (summary.Errors.Count > 0)
+    {
+        <details>
+            <summary>@summary.Errors.Count fel (klicka för att visa, max 20)</summary>
+            <ul>
+                @foreach (var err in summary.Errors.Take(20))
+                {
+                    <li>@err</li>
+                }
+            </ul>
+        </details>
+    }
+}
+
+@code {
+    private IBrowserFile? pickedFile;
+    private bool busy;
+    private bool enrich;
+    private string status = string.Empty;
+    private ImportSummary? summary;
+
+    private void OnFilePicked(InputFileChangeEventArgs e)
+    {
+        pickedFile = e.File;
+        status = $"Vald: {pickedFile.Name} ({pickedFile.Size / 1024} KB)";
+        summary = null;
+    }
+
+    private async Task ImportAsync()
+    {
+        if (pickedFile is null)
+            return;
+
+        busy = true;
+        status = "Läser CSV...";
+        try
+        {
+            await using var stream = pickedFile.OpenReadStream(maxAllowedSize: 20 * 1024 * 1024);
+            using var copy = new MemoryStream();
+            await stream.CopyToAsync(copy);
+            copy.Position = 0;
+
+            status = enrich 
+                ? "Importerar + hämtar från Scryfall (kan ta en stund)..." 
+                : "Importerar...";
+            summary = await Importer.ImportManaBoxCsvAsync(copy, enrich);
+            status = $"Klart: {summary.Imported} nya, {summary.Updated} uppdaterade.";
+        }
+        catch (Exception ex)
+        {
+            status = $"Fel: {ex.Message}";
+        }
+        busy = false;
+    }
+}
