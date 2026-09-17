@@ -12,10 +12,10 @@ public record CollectionStats(
     List<RarityStat> ByRarity,
     List<ColorStat> ByColor);
 
-/// <summary>Raknar sammanlagd statistik for samlingen i EUR.</summary>
+/// <summary>Räknar sammanlagd statistik för samlingen i EUR.</summary>
 public class CollectionStatsService(AppDbContext db)
 {
-    /// <summary>Hamtar totaler, per raritet och per farggrupp. Flerfargade hamnar i Multicolor.</summary>
+    /// <summary>Hämtar totaler, per raritet och per färggrupp. Flerfärgade hamnar i Multicolor.</summary>
     public async Task<CollectionStats> GetStatsAsync(CancellationToken ct = default)
     {
         var cards = await db.Cards.AsNoTracking().ToListAsync(ct);

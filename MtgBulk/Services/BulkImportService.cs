@@ -68,7 +68,7 @@ public class BulkImportService(AppDbContext db, ScryfallService scryfall)
                         }
                         catch (Exception ex)
                         {
-                            errors.Add($"{row.Name}: farghopp ({ex.Message})");
+                            errors.Add($"{row.Name}: färghopp ({ex.Message})");
                         }
                     }
                     updated++;

@@ -33,7 +33,7 @@ public class MtgCard
     [MaxLength(32)]
     public string Rarity { get; set; } = string.Empty;
 
-    /// <summary>Farger som sorterade bokstaver, t.ex. "", "W", "WUB". Tom = farglost.</summary>
+    /// <summary>Färger som sorterade bokstaver, t.ex. "", "W", "WUB". Tom = färglöst.</summary>
     [MaxLength(8)]
     public string Colors { get; set; } = string.Empty;
 
