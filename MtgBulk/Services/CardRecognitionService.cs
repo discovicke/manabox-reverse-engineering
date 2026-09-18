@@ -41,8 +41,7 @@ public class CardRecognitionService(
 
         var candidate = rawText
             .Split('\n', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
-            .Where(l => l.Length >= 2 && l.Any(char.IsLetter))
-            .FirstOrDefault();
+            .FirstOrDefault(l => l.Length >= 2 && l.Any(char.IsLetter));
 
         if (string.IsNullOrWhiteSpace(candidate))
             return new RecognizeResult(false, null, rawText, null, "Ingen text hittad - fota rakt i dagsljus");
