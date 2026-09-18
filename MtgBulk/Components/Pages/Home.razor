@@ -3,64 +3,158 @@
 @using MtgBulk.Services
 @inject CollectionStatsService Stats
 
-<PageTitle>MTG Bulk</PageTitle>
+<PageTitle>MTG Bulk – Översikt</PageTitle>
 
-<h1>MTG Bulk</h1>
-
-<p>
-    <a href="collection">Visa samling</a> • <a href="scan">Skanna kort</a> • <a href="import">Importera CSV</a>
-</p>
+<div class="d-flex justify-content-between align-items-center mb-1">
+    <h1 class="mb-0">Översikt</h1>
+    <div class="d-flex gap-2">
+        <button class="btn btn-outline-secondary btn-sm" @onclick="ReloadAsync">Uppdatera</button>
+        <a class="btn btn-primary btn-sm" href="collection">Visa samling</a>
+    </div>
+</div>
+<p class="text-muted">Värde och fördelning för hela samlingen.</p>
 
 @if (stats is null)
 {
-    <p>Laddar statistik...</p>
+    <p><span class="spinner-border spinner-border-sm me-2"></span>Laddar statistik...</p>
+}
+else if (stats.TotalQuantity == 0)
+{
+    <div class="alert alert-info">
+        Samlingen är tom. <a href="import">Importera en ManaBox-CSV</a> eller <a href="scan">skanna ett kort</a> för att komma igång.
+    </div>
 }
 else
 {
-    <h2>Totalt: @stats.TotalValueEur.ToString("0.00") EUR (@stats.TotalQuantity kort, @stats.TotalUnique unika)</h2>
+    <div class="row g-3 mb-4">
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body">
+                    <div class="text-muted small">Totalt värde</div>
+                    <div class="fs-4">@stats.TotalValueEur.ToString("0.00") EUR</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body">
+                    <div class="text-muted small">Antal kort</div>
+                    <div class="fs-4">@stats.TotalQuantity.ToString("N0")</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body">
+                    <div class="text-muted small">Unika kort</div>
+                    <div class="fs-4">@stats.TotalUnique.ToString("N0")</div>
+                </div>
+            </div>
+        </div>
+    </div>
 
-    <h3>Per raritet</h3>
-    <table class="table table-striped">
-        <thead>
-            <tr><th>Raritet</th><th>Unika</th><th>Antal</th><th>Varde EUR</th></tr>
-        </thead>
-        <tbody>
-            @foreach (var r in stats.ByRarity)
-            {
-                <tr>
-                    <td>@r.Rarity</td>
-                    <td>@r.Unique</td>
-                    <td>@r.Quantity</td>
-                    <td>@r.ValueEur.ToString("0.00")</td>
-                </tr>
-            }
-        </tbody>
-    </table>
+    <div class="row g-3">
+        <div class="col-lg-6">
+            <div class="card">
+                <div class="card-header">Per raritet</div>
+                <div class="table-responsive">
+                    <table class="table table-sm table-striped mb-0">
+                        <thead>
+                            <tr>
+                                <th>Raritet</th>
+                                <th class="text-end">Unika</th>
+                                <th class="text-end">Antal</th>
+                                <th class="text-end">Värde EUR</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var r in stats.ByRarity)
+                            {
+                                <tr>
+                                    <td>@FormatRarity(r.Rarity)</td>
+                                    <td class="text-end">@r.Unique.ToString("N0")</td>
+                                    <td class="text-end">@r.Quantity.ToString("N0")</td>
+                                    <td class="text-end">@r.ValueEur.ToString("0.00")</td>
+                                </tr>
+                            }
+                        </tbody>
+                        <tfoot>
+                            <tr class="fw-bold">
+                                <td>Totalt</td>
+                                <td class="text-end">@stats.TotalUnique.ToString("N0")</td>
+                                <td class="text-end">@stats.TotalQuantity.ToString("N0")</td>
+                                <td class="text-end">@stats.TotalValueEur.ToString("0.00")</td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-6">
+            <div class="card">
+                <div class="card-header">Per färg</div>
+                <div class="table-responsive">
+                    <table class="table table-sm table-striped mb-0">
+                        <thead>
+                            <tr>
+                                <th>Färg</th>
+                                <th class="text-end">Unika</th>
+                                <th class="text-end">Antal</th>
+                                <th class="text-end">Värde EUR</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var c in stats.ByColor)
+                            {
+                                <tr>
+                                    <td>@FormatColor(c.Group)</td>
+                                    <td class="text-end">@c.Unique.ToString("N0")</td>
+                                    <td class="text-end">@c.Quantity.ToString("N0")</td>
+                                    <td class="text-end">@c.ValueEur.ToString("0.00")</td>
+                                </tr>
+                            }
+                        </tbody>
+                        <tfoot>
+                            <tr class="fw-bold">
+                                <td>Totalt</td>
+                                <td class="text-end">@stats.TotalUnique.ToString("N0")</td>
+                                <td class="text-end">@stats.TotalQuantity.ToString("N0")</td>
+                                <td class="text-end">@stats.TotalValueEur.ToString("0.00")</td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
 
-    <h3>Per farg</h3>
-    <table class="table table-striped">
-        <thead>
-            <tr><th>Farg</th><th>Unika</th><th>Antal</th><th>Varde EUR</th></tr>
-        </thead>
-        <tbody>
-            @foreach (var c in stats.ByColor)
-            {
-                <tr>
-                    <td>@c.Group</td>
-                    <td>@c.Unique</td>
-                    <td>@c.Quantity</td>
-                    <td>@c.ValueEur.ToString("0.00")</td>
-                </tr>
-            }
-        </tbody>
-    </table>
+    <div class="d-flex gap-2 mt-4">
+        <a class="btn btn-outline-primary btn-sm" href="scan">Skanna kort</a>
+        <a class="btn btn-outline-primary btn-sm" href="import">Importera CSV</a>
+    </div>
 }
 
 @code {
     private CollectionStats? stats;
 
-    protected override async Task OnInitializedAsync()
+    protected override async Task OnInitializedAsync() => await ReloadAsync();
+
+    private async Task ReloadAsync() => stats = await Stats.GetStatsAsync();
+
+    private static string FormatRarity(string rarity) =>
+        string.IsNullOrWhiteSpace(rarity)
+            ? "Okänd"
+            : char.ToUpperInvariant(rarity[0]) + rarity[1..].ToLowerInvariant();
+
+    private static string FormatColor(string group) => group switch
     {
-        stats = await Stats.GetStatsAsync();
-    }
+        "W" => "Vit (W)",
+        "U" => "Blå (U)",
+        "B" => "Svart (B)",
+        "R" => "Röd (R)",
+        "G" => "Grön (G)",
+        "Färglöst" => "Färglöst",
+        "Multicolor" => "Multicolor",
+        _ => group
+    };
 }

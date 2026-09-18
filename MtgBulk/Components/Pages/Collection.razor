@@ -5,14 +5,29 @@
 @using MtgBulk.Models
 @using MtgBulk.Components.Cards
 @inject AppDbContext Db
+@implements IDisposable
 
 <PageTitle>Samling</PageTitle>
 
-<h1>Samling (@totalCount)</h1>
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h1 class="mb-0">Samling (@totalCount)</h1>
+    <button class="btn btn-danger" disabled="@(totalCount == 0)" @onclick="ClearAllAsync">Rensa samling</button>
+</div>
 
-<input class="form-control mb-3" placeholder="Sök namn..." value="@search" @oninput="OnSearchInput" />
+@if (!string.IsNullOrEmpty(status))
+{
+    <div class="alert alert-success">@status</div>
+}
 
-<CardTable Cards="cards" SortColumn="@sortColumn" SortAscending="@sortAscending" OnSort="OnSortChanged" />
+<div class="input-group mb-3">
+    <input class="form-control" placeholder="Sök namn..." value="@search" @oninput="OnSearchInput" />
+    @if (!string.IsNullOrEmpty(search))
+    {
+        <button class="btn btn-outline-secondary" @onclick="ClearSearchAsync">Rensa</button>
+    }
+</div>
+
+<CardTable Cards="cards" SortColumn="@sortColumn" SortAscending="@sortAscending" OnSort="OnSortChanged" OnDelete="DeleteCardAsync" />
 
 <div class="d-flex gap-2 align-items-center mt-2">
     <button class="btn btn-secondary" disabled="@(currentPage <= 1)" @onclick="PrevPage">Förra</button>
@@ -29,12 +44,37 @@
     private const int pageSize = 20;
     private int totalCount;
     private int totalPages = 1;
+    private string status = string.Empty;
+    private CancellationTokenSource? searchCts;
 
     protected override async Task OnInitializedAsync() => await LoadPageAsync();
+
+    public void Dispose() => searchCts?.Cancel();
 
     private async Task OnSearchInput(ChangeEventArgs e)
     {
         search = e.Value?.ToString() ?? string.Empty;
+        currentPage = 1;
+
+        searchCts?.Cancel();
+        searchCts?.Dispose();
+        searchCts = new CancellationTokenSource();
+
+        try
+        {
+            await Task.Delay(300, searchCts.Token);
+            await LoadPageAsync();
+        }
+        catch (TaskCanceledException)
+        {
+            // Nytt tecken hann skrivas in - ignorera denna sökning.
+        }
+    }
+
+    private async Task ClearSearchAsync()
+    {
+        searchCts?.Cancel();
+        search = string.Empty;
         currentPage = 1;
         await LoadPageAsync();
     }
@@ -70,12 +110,38 @@
         }
     }
 
+    private async Task DeleteCardAsync(int id)
+    {
+        var card = await Db.Cards.FindAsync(id);
+        if (card is null)
+            return;
+
+        Db.Cards.Remove(card);
+        await Db.SaveChangesAsync();
+        status = $"Tog bort {card.Name}.";
+        await LoadPageAsync();
+    }
+
+    private async Task ClearAllAsync()
+    {
+        await Db.Cards.ExecuteDeleteAsync();
+        currentPage = 1;
+        status = "Samlingen rensad.";
+        await LoadPageAsync();
+    }
+
     private async Task LoadPageAsync()
     {
         var query = Db.Cards.AsQueryable();
 
-        if (!string.IsNullOrWhiteSpace(search))
-            query = query.Where(c => c.Name.Contains(search));
+        var trimmed = search.Trim();
+        if (!string.IsNullOrWhiteSpace(trimmed))
+        {
+            // Contains() blir case-sensitive i SQLite (instr), LIKE är
+            // case-insensitive. Escapa LIKE-wildcards så att t.ex. "%" söks bokstavligt.
+            var pattern = $"%{EscapeLikePattern(trimmed)}%";
+            query = query.Where(c => EF.Functions.Like(c.Name, pattern, "\\"));
+        }
 
         totalCount = await query.CountAsync();
         totalPages = Math.Max(1, (int)Math.Ceiling(totalCount / (double)pageSize));
@@ -99,4 +165,7 @@
 
         cards = await query.Skip((currentPage - 1) * pageSize).Take(pageSize).ToListAsync();
     }
+
+    private static string EscapeLikePattern(string value) =>
+        value.Replace("\\", "\\\\").Replace("%", "\\%").Replace("_", "\\_");
 }

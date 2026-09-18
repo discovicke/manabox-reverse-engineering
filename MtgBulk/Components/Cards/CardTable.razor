@@ -16,6 +16,7 @@ else
                 <th><button class="btn btn-link p-0" @onclick='() => OnSort.InvokeAsync("Quantity")'>Antal @Arrow("Quantity")</button></th>
                 <th><button class="btn btn-link p-0" @onclick='() => OnSort.InvokeAsync("PriceEur")'>EUR @Arrow("PriceEur")</button></th>
                 <th><button class="btn btn-link p-0" @onclick='() => OnSort.InvokeAsync("Source")'>Källa @Arrow("Source")</button></th>
+                <th>Åtgärd</th>
             </tr>
         </thead>
         <tbody>
@@ -34,6 +35,7 @@ else
                     <td>@card.Quantity</td>
                     <td>@(card.PriceEur?.ToString("0.00") ?? "-")</td>
                     <td>@card.Source</td>
+                    <td><button class="btn btn-danger btn-sm" @onclick="() => OnDelete.InvokeAsync(card.Id)">Ta bort</button></td>
                 </tr>
             }
         </tbody>
@@ -52,6 +54,9 @@ else
 
     [Parameter]
     public EventCallback<string> OnSort { get; set; }
+
+    [Parameter]
+    public EventCallback<int> OnDelete { get; set; }
 
     private string Arrow(string column) =>
         SortColumn != column 
